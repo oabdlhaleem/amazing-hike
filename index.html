@@ -1,1 +1,343 @@
+<!DOCTYPE html>
+<html>
 
+<head>
+  <meta charset=utf-8 />
+  <title>The Amazing Hike</title>
+  <meta name='viewport' content='initial-scale=1,maximum-scale=1,user-scalable=no' />
+  <link rel='icon' href='data/compass3.png' type='image/x-icon' />
+
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.4.0/dist/leaflet.css" />
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet.locatecontrol/dist/L.Control.Locate.min.css" />
+
+  <link href="https://fonts.googleapis.com/css?family=Quicksand:400,700" rel="stylesheet">
+
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Quicksand', sans-serif;
+      font-size: 100%;
+      color: #3d3d3d;
+    }
+
+    h1 {
+      position: absolute;
+      margin-top: 0;
+      top: 10px;
+      left: 15px;
+      font-size: 1.5em;
+      font-family: 'Quicksand', sans-serif;
+      font-weight: 700;
+      letter-spacing: .04em;
+      padding: 10px 15px;
+      /* Add styles to match Leaflet UI elements */
+      background: rgba(256, 256, 256, .4);
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+      border: 1px solid #ddd;
+      border-radius: 5px;
+      z-index: 800;
+      text-align: center;
+    }
+
+    h2 {
+      font-family: 'Quicksand', sans-serif;
+      font-size: 1.2em;
+      letter-spacing: .04em;
+
+    }
+
+    #map {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      width: 100%;
+    }
+
+    #about {
+      position: absolute;
+      bottom: 20px;
+      left: 15px;
+      width: 280px;
+      padding: 0 15px;
+      /* Add styles to match Leaflet UI elements */
+      background: rgba(256, 256, 256, .6);
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+      border: 1px solid #ddd;
+      border-radius: 5px;
+      z-index: 800;
+    }
+
+    #image {
+      position: absolute;
+      bottom: 20px;
+      right: 10px;
+
+      padding: .1em;
+      /* Add styles to match Leaflet UI elements */
+      background: rgba(256, 256, 256, .5);
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+      border: 1px solid #ddd;
+      border-radius: 5px;
+      z-index: 800;
+    }
+
+    p {
+      font-size: .9em;
+      line-height: 1.5em;
+    }
+
+    a {
+      color: #005daa;
+      text-decoration: none;
+    }
+
+    a:hover {
+      text-decoration: underline;
+    }
+
+    /* Leaflet popup styles */
+    .leaflet-popup-content {
+      font-family: 'Quicksand', sans-serif;
+      font-size: 1.1em;
+    }
+
+    /*
+		When browser is 900px high or less
+		make the font a little smaller.
+		 */
+    @media screen and (max-height: 400px) {
+
+      #about p,
+      #about h2 {
+        font-size: .6em;
+      }
+
+      h1 {
+        font-size: 1.2em;
+      }
+
+      #about h2 {
+        font-size: 1em;
+      }
+
+      .leaflet-popup-content {
+        font-family: 'Quicksand', sans-serif;
+        font-size: 0.9em;
+      }
+    }
+
+    /* Don't display info block when window is very small */
+    @media screen and (max-height: 200px) {
+
+      #about {
+        display: none;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <h1>The Unexpected Hike</h1>
+
+  <div id='map'></div>
+
+  <section id="about">
+    <h2>Nothing Goes to Plan</h2>
+    <p>This map tells a story of what happens when nothing goes according to plan. A couple of friends and I went for a hike in the <a href="https://www.nps.gov/grsm/index.htm">Smokey Mountains</a>. We had a plan. It didn't survive. Explore the map to learn more about our story.<br>Mouse over a path or click on a <b style='color:turquoise'>Story Point</b>.</p>
+    <p>Map authored by <a href="https://geography.as.uky.edu/users/oaab222">Osama Abdl-Haleem</a>.</p>
+  </section>
+
+  <pic id="image">
+    <img class="max-image-width" src="data/hikingImages/atThePeak3.jpeg" height="150px" width="300px" title="Osama at the Peak">
+  </pic>
+
+  <script src="https://unpkg.com/leaflet@1.4.0/dist/leaflet.js"></script>
+  <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+  <script>
+    var options = {
+      center: [35.6313, -83.4233],
+      zoom: 12,
+      zoomControl: false
+    }
+
+    var map = L.map('map', options);
+
+    // add zoom control to top right window position
+    L.control.zoom({
+      position: 'topright'
+    }).addTo(map);
+
+    // Use var or let to initialize variables that are assigned in creating the geoJSON layer
+    let dataHikeLayer,
+      dataPlanLayer,
+      dataPointLayer,
+      dataStoryLayer
+
+    // Get basemap URL from Leaflet Providers
+    var basemap_url = "https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}.png"
+
+    // Get basemap attributes from Leaflet Providers
+    var basemap_attributes = {
+      attribution: 'Tiles &copy; Esri',
+      subdomains: 'abcd',
+      maxZoom: 19
+    };
+    // requests some map tiles
+    var tiles = L.tileLayer(basemap_url, basemap_attributes);
+    map.addLayer(tiles);
+
+    var hikeLayer = $.getJSON("data/hike.geojson", function(data) {
+      dataHikeLayer = L.geoJson(data, {
+        style: function(feature) {
+          return {
+            color: 'royalblue',
+            weight: 4,
+            fillOpacity: 0,
+            interactive: true
+          };
+        },
+      });
+      dataHikeLayer.addTo(map)
+
+      //Provide affordance for mousing over the route
+      dataHikeLayer.on('mouseover', function(e) {
+        e.target.setStyle({
+          color: 'cyan',
+          weight: 6
+        });
+      });
+
+      dataHikeLayer.on('mouseout', function(e) {
+        e.target.setStyle({
+          color: 'royalblue',
+          weight: 4
+        });
+      });
+
+      dataHikeLayer.bindTooltip("We hiked 16 miles and <br>hitch-hiked 2 more.", {
+        sticky: true
+      })
+    });
+
+    var planLayer = $.getJSON("data/plan.geojson", function(data) {
+      dataPlanLayer = L.geoJson(data, {
+        style: function(feature) {
+          return {
+            color: 'red',
+            weight: 4,
+            fillOpacity: 0,
+            dashArray: "10, 5",
+            interactive: true
+          };
+        },
+      });
+      dataPlanLayer.addTo(map)
+
+      //Provide affordance for mousing over the route
+      dataPlanLayer.on('mouseover', function(e) {
+        e.target.setStyle({
+          color: 'orange',
+          weight: 6,
+          dashArray: "0"
+        });
+      });
+
+      dataPlanLayer.on('mouseout', function(e) {
+        e.target.setStyle({
+          color: 'red',
+          weight: 4,
+          dashArray: "10, 5"
+        });
+      });
+
+      dataPlanLayer.bindTooltip("We had planned to hike 11 miles to <br>Icewater Springs, and then back the<br> next day. That's not what happened.", {
+        sticky: true
+      })
+    });
+
+    var pointLayer = $.getJSON("data/points.geojson", function(data) {
+      dataPointLayer = L.geoJson(data, {
+        pointToLayer: function(feature, latlng) {
+          return L.marker(latlng, {
+            icon: L.icon({
+              iconUrl: feature.properties.icon,
+              iconSize: [30, 30],
+              popupAnchor: [0, -17]
+            })
+          });
+        },
+      });
+      dataPointLayer.eachLayer(function(layer) {
+        var props = layer.feature.properties;
+        layer.bindPopup("<b>" + props.name + "</b>");
+      })
+      dataPointLayer.addTo(map);
+      map.fitBounds(dataPointLayer.getBounds());
+    });
+
+    var storyLayer = $.getJSON("data/story.geojson", function(data) {
+      dataStoryLayer = L.geoJson(data, {
+        pointToLayer: function(feature, latlng) {
+          return L.circleMarker(latlng, {
+            color: "turquoise",
+            weight: 2,
+            fillColor: "aquamarine",
+            fillOpacity: .8,
+            radius: 10
+          })
+        },
+      });
+
+      //Provide affordance for mousing over the route
+      dataStoryLayer.eachLayer(function(layer) {
+        layer.on('mouseover', function(e) {
+          e.target.setStyle({
+            color: 'yellow',
+            radius: 20
+          });
+        });
+
+        layer.on('mouseout', function(e) {
+          e.target.setStyle({
+            color: 'turquoise',
+            radius: 10
+          });
+        });
+
+        //Change picture when story point clicked
+        var picture = "'" + layer.feature.properties.image + "'"
+        layer.on('click', function(e) {
+          $('pic').html(picture);
+        });
+
+        var props = layer.feature.properties;
+        layer.bindPopup("<b>" + props.name + "</b><br>" + props.message);
+      })
+      dataStoryLayer.addTo(map)
+    });
+
+    // After all of the request for reading in data are done, add the control
+    $.when(hikeLayer, storyLayer, pointLayer, planLayer).done(function() {
+
+      var controlLabels = {
+        // reference the geojson layer, not feature collection
+        "<b style='color:red'>The Plan</b>": dataPlanLayer,
+      }
+
+      L.control.layers(null, controlLabels, {
+        collapsed: false,
+      }).addTo(map);
+    });
+
+    //Reset the default picture
+    map.on('click', function(e) {
+      $('pic').html('<img class="max-image-width" src="data/hikingImages/atThePeak3.jpeg" height="150px" width="300px" title="Osama at the Peak">')
+    });
+  </script>
+
+</body>
+
+</html>

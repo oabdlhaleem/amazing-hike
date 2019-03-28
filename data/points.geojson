@@ -1,0 +1,54 @@
+{
+  "type": "FeatureCollection",
+  "features": [{
+    "type": "Feature",
+    "properties": {
+      "name": "Alum Cave Bluffs Trailhead",
+      "icon": "data/shoe-15.svg"
+    },
+    "geometry": {
+      "type": "Point",
+      "coordinates": [-83.4509686, 35.6288789]
+    }
+  }, {
+    "type": "Feature",
+    "properties": {
+      "name": "Mount Le Conte",
+      "icon": "data/mountain-15.svg"
+    },
+    "geometry": {
+      "type": "Point",
+      "coordinates": [-83.4368267, 35.6542611]
+    }
+  }, {
+    "type": "Feature",
+    "properties": {
+      "name": "Boulevard Trail Junction",
+      "icon": "data/shoe-15.svg"
+    },
+    "geometry": {
+      "type": "Point",
+      "coordinates": [-83.3906538, 35.6283986]
+    }
+  }, {
+    "type": "Feature",
+    "properties": {
+      "name": "Newfound Gap Parking Area",
+      "icon": "data/parking-15.svg"
+    },
+    "geometry": {
+      "type": "Point",
+      "coordinates": [-83.4259653, 35.6106057]
+    }
+  }, {
+    "type": "Feature",
+    "properties": {
+      "name": "Icewater Spring Shelter",
+      "icon": "data/shelter-15.svg"
+    },
+    "geometry": {
+      "type": "Point",
+      "coordinates": [-83.3863288, 35.6298137]
+    }
+  }]
+}
