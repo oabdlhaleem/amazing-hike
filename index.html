@@ -41,6 +41,28 @@
       text-align: center;
     }
 
+    #learnmore {
+
+      position: absolute;
+      margin-top: 0;
+      top: 70px;
+      left: 15px;
+      font-family: 'Quicksand', sans-serif;
+      font-size: 1.0em;
+      letter-spacing: .04em;
+      padding: 10px 15px;
+      /* Add styles to match Leaflet UI elements */
+      background: rgba(256, 256, 256, .4);
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+      border: 1px solid #ddd;
+      border-radius: 5px;
+      z-index: 800;
+      text-align: center;
+      display: none;
+    }
+
+    }
+
     h2 {
       font-family: 'Quicksand', sans-serif;
       font-size: 1.2em;
@@ -67,6 +89,20 @@
       border: 1px solid #ddd;
       border-radius: 5px;
       z-index: 800;
+    }
+
+    #aboutSmall {
+      position: absolute;
+      bottom: 0px;
+      height: 50vh;
+      width: 100%;
+      padding: 0 15px;
+      /* Add styles to match Leaflet UI elements */
+      background: rgba(256, 256, 256, .9);
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+      border: 1px solid #ddd;
+      border-radius: 5px;
+      z-index: 700;
     }
 
     #image {
@@ -107,7 +143,7 @@
 		When browser is 900px high or less
 		make the font a little smaller.
 		 */
-    @media screen and (max-height: 400px) {
+    @media screen and (max-height: 648px), screen and (max-width: 648px) {
 
       #about p,
       #about h2 {
@@ -126,14 +162,40 @@
         font-family: 'Quicksand', sans-serif;
         font-size: 0.9em;
       }
-    }
 
-    /* Don't display info block when window is very small */
-    @media screen and (max-height: 200px) {
+      .leaflet-popup {
+        width: 200px;
+      }
+
+      .max-image-width {
+        width: 98vw;
+        height: auto;
+      }
+
+      #image {
+      position: absolute;
+      bottom: 20px;
+      right: 2px;
+      }
+
+      #learnmore {
+        display: inline;
+      }
 
       #about {
         display: none;
       }
+
+    }
+
+    /* Don't display info block when window is very small */
+    @media screen and (max-height: 200px), screen and (max-height: 200px) {
+
+      #about {
+        display: none;
+      }
+
+      
     }
   </style>
 </head>
@@ -141,6 +203,7 @@
 <body>
 
   <h1>The Unexpected Hike</h1>
+  <button id="learnmore">Learn more</button>
 
   <div id='map'></div>
 
@@ -331,6 +394,35 @@
         collapsed: false,
       }).addTo(map);
     });
+
+    var button = document.getElementById("learnmore"),
+        about = document.getElementById("about"),
+        clicked = false
+
+      button.addEventListener("click", function () {
+          // ******************************* //
+          if (clicked == false) {
+              clicked = true;
+              this.style.backgroundColor = "orange";
+              about.setAttribute("id", "aboutSmall")
+          } else {
+              clicked = false
+              about.setAttribute("id", "about")
+              this.style.backgroundColor = "rgba(256, 256, 256, .4)";
+          }
+      });
+
+      window.addEventListener('resize', function() {
+
+        if (window.innerWidth >= 680) {
+          clicked = false
+          about.setAttribute("id", "about")
+          button.style.backgroundColor = "rgba(256, 256, 256, .4)";
+        }
+
+      })
+
+    
 
     //Reset the default picture
     map.on('click', function(e) {
